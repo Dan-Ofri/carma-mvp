@@ -369,6 +369,7 @@
         const COUNTER_NAMESPACE = "carma_mvp_prod";
         const VISITS_KEY = "site_visits";
         const SIGNUPS_KEY = "consented_signups";
+        const COUNTER_BASE_CANDIDATES = ["https://api.countapi.xyz", "https://countapi.xyz"];
 
         // Optional webhook URL for storing lead emails in a real backend.
         // Example: https://your-server.com/api/leads
@@ -380,6 +381,9 @@
         const LOCAL_VISITS_KEY = "carma_local_visits";
         const LOCAL_SIGNUPS_KEY = "carma_local_signups";
         const VISIT_LAST_TRACKED_DAY_KEY = "carma_visit_last_tracked_day";
+        let remoteCounterDisabled = false;
+        let remoteCounterBase = COUNTER_BASE_CANDIDATES[0];
+        let remoteCounterWarned = false;
 
         const HERO_VARIANTS = {
             a: {
@@ -479,36 +483,63 @@
             return new Intl.NumberFormat("he-IL").format(value);
         }
 
-        async function safeGetCounterValue(key) {
+        function markRemoteCounterUnavailable() {
+            remoteCounterDisabled = true;
+            if (!remoteCounterWarned) {
+                console.warn("Counter service unavailable. Falling back to local counters in this session.");
+                remoteCounterWarned = true;
+            }
+        }
+
+        async function fetchWithTimeout(url, timeoutMs) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(function () {
+                controller.abort();
+            }, timeoutMs);
+
             try {
-                return await getCounterValue(key);
-            } catch (error) {
-                console.error(`Failed to fetch counter: ${key}`, error);
+                return await fetch(url, { signal: controller.signal });
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        async function callCounterApi(action, key) {
+            if (remoteCounterDisabled) {
                 return null;
             }
+
+            const candidates = [remoteCounterBase].concat(
+                COUNTER_BASE_CANDIDATES.filter(function (base) {
+                    return base !== remoteCounterBase;
+                })
+            );
+
+            for (const base of candidates) {
+                try {
+                    const response = await fetchWithTimeout(`${base}/${action}/${COUNTER_NAMESPACE}/${key}`, 3500);
+                    if (!response.ok) {
+                        continue;
+                    }
+
+                    const data = await response.json();
+                    remoteCounterBase = base;
+                    return Number(data.value || 0);
+                } catch (error) {
+                    // Try next endpoint candidate.
+                }
+            }
+
+            markRemoteCounterUnavailable();
+            return null;
+        }
+
+        async function safeGetCounterValue(key) {
+            return await callCounterApi("get", key);
         }
 
         async function safeHitCounter(key) {
-            try {
-                return await hitCounter(key);
-            } catch (error) {
-                console.error(`Failed to hit counter: ${key}`, error);
-                return null;
-            }
-        }
-
-        async function getCounterValue(key) {
-            const response = await fetch(`https://api.countapi.xyz/get/${COUNTER_NAMESPACE}/${key}`);
-            if (!response.ok) throw new Error("Counter get failed");
-            const data = await response.json();
-            return Number(data.value || 0);
-        }
-
-        async function hitCounter(key) {
-            const response = await fetch(`https://api.countapi.xyz/hit/${COUNTER_NAMESPACE}/${key}`);
-            if (!response.ok) throw new Error("Counter hit failed");
-            const data = await response.json();
-            return Number(data.value || 0);
+            return await callCounterApi("hit", key);
         }
 
         async function refreshCounters() {
@@ -678,9 +709,16 @@
                 };
             },
             getServerCounters: async function () {
+                const visits = await safeGetCounterValue(VISITS_KEY);
+                const signups = await safeGetCounterValue(SIGNUPS_KEY);
                 return {
-                    visits: await safeGetCounterValue(VISITS_KEY),
-                    signups: await safeGetCounterValue(SIGNUPS_KEY)
+                    remoteAvailable: !remoteCounterDisabled,
+                    visits,
+                    signups,
+                    local: {
+                        visits: getLocalCount(LOCAL_VISITS_KEY),
+                        signups: getLocalCount(LOCAL_SIGNUPS_KEY)
+                    }
                 };
             },
             clearLocalCounters: function () {
