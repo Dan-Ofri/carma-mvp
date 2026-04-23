@@ -12,90 +12,80 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        body { 
-            font-family: 'Assistant', sans-serif; 
-            scroll-behavior: smooth; 
-        }
-        .hero-bg {
-            background: radial-gradient(circle at top left, #f8fafc 0%, #ffffff 100%);
-        }
-        /* תיקון ליישור שדות טקסט באנגלית בתוך מסמך RTL */
-        input[type="email"] {
-            direction: ltr;
-            text-align: right;
-        }
-        input[type="email"]::placeholder {
-            direction: rtl;
-            text-align: right;
-        }
+        body { font-family: 'Assistant', sans-serif; scroll-behavior: smooth; }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
+        .gradient-text { background: linear-gradient(90deg, #2563eb, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        input[type="email"] { direction: ltr; text-align: right; }
     </style>
 </head>
-<body class="bg-white text-slate-900 antialiased">
+<body class="bg-slate-50 text-slate-900 antialiased">
 
-    <nav class="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-slate-100">
+    <nav class="fixed top-0 w-full glass z-50 border-b border-slate-200/50">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-200">
                     <i data-lucide="car" class="text-white w-6 h-6"></i>
                 </div>
-                <span class="text-2xl font-black tracking-tighter text-blue-600">CARMA</span>
+                <span class="text-2xl font-black tracking-tighter text-blue-600 uppercase">Carma</span>
             </div>
-            <a href="#signup" class="bg-slate-900 text-white px-6 py-2.5 rounded-full font-bold hover:bg-blue-600 transition-all duration-300">
+            <a href="#signup" class="bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-blue-700 transition-all shadow-md">
                 הצטרפות לבטא
             </a>
         </div>
     </nav>
 
-    <section class="hero-bg pt-40 pb-24 px-6 overflow-hidden">
-        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+    <section class="relative pt-32 pb-20 px-6 overflow-hidden bg-white">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-30"></div>
+        
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative">
             <div class="text-right space-y-8">
-                <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-bold animate-pulse">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i>
-                    <span>הבטיחו לעצמכם מקום בגרסת הבטא</span>
+                <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-bold">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
+                    </span>
+                    ההרשמה ל-500 הראשונים פתוחה
                 </div>
-                <h1 class="text-5xl md:text-7xl font-black leading-[1.1] text-slate-900">
-                    הנהיגה שלכם <br/>
-                    <span class="text-blue-600">שווה כסף.</span>
+                <h1 class="text-6xl md:text-7xl font-black leading-tight tracking-tight">
+                    למה לשלם על נהיגה אם אפשר <span class="gradient-text">להרוויח?</span>
                 </h1>
-                <p class="text-xl text-slate-600 max-w-xl font-medium leading-relaxed">
-                    Carma הופכת נהיגה בטוחה להטבות ב-Wolt, KSP ועוד מותגים מובילים. 
-                    בלי בלימות פתע, בלי הסחות דעת - פשוט נוהגים, צוברים ומרוויחים.
+                <p class="text-xl text-slate-500 max-w-xl font-medium leading-relaxed">
+                    הצטרפו למהפכת הנהיגה הבטוחה של Carma. האפליקציה שהופכת כל קילומטר של נהיגה זהירה להטבות אמיתיות ב-Wolt, KSP ורשתות מובילות.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 pt-4">
-                    <a href="#signup" class="bg-blue-600 text-white px-10 py-5 rounded-2xl font-bold text-xl hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all text-center">
-                        אני רוצה להצטרף
+                    <a href="#signup" class="bg-slate-900 text-white px-10 py-5 rounded-2xl font-bold text-xl hover:bg-blue-600 transition-all shadow-xl text-center">
+                        אני רוצה להשתתף בפיילוט
                     </a>
                 </div>
             </div>
 
-            <div class="relative hidden lg:block justify-self-center">
-                <div class="absolute -inset-4 bg-blue-100/50 rounded-[4rem] blur-3xl"></div>
-                <div class="relative w-[300px] h-[600px] bg-slate-900 rounded-[3rem] border-[10px] border-slate-800 shadow-2xl overflow-hidden text-white p-8">
-                    <div class="flex justify-between items-center mb-10">
-                        <div class="text-right">
-                            <p class="text-slate-400 text-xs">ציון נהיגה</p>
-                            <p class="text-4xl font-black">94</p>
-                        </div>
-                        <div class="bg-green-500/20 text-green-400 px-3 py-1 rounded-lg text-xs font-bold border border-green-500/30">
-                            PRO
-                        </div>
+            <div class="relative justify-self-center lg:justify-self-end">
+                <div class="w-[280px] h-[580px] bg-slate-900 rounded-[3rem] border-[8px] border-slate-800 shadow-2xl overflow-hidden relative">
+                    <div class="absolute top-0 w-full h-6 bg-slate-800 flex justify-center items-end pb-1">
+                        <div class="w-16 h-1 bg-slate-700 rounded-full"></div>
                     </div>
-                    <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 mb-8 shadow-lg">
-                        <p class="text-blue-100 text-xs mb-1">יתרה שנצברה</p>
-                        <p class="text-3xl font-bold">₪ 1,240</p>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="h-14 bg-slate-800/50 rounded-2xl border border-slate-700/50 flex items-center px-4 gap-3">
-                            <div class="w-8 h-8 bg-slate-700 rounded-lg"></div>
-                            <div class="h-2 w-24 bg-slate-700 rounded-full"></div>
+                    <div class="p-6 pt-10 text-white">
+                        <div class="flex justify-between items-center mb-8">
+                            <div class="text-right">
+                                <p class="text-slate-400 text-[10px]">ציון שבועי</p>
+                                <p class="text-3xl font-black">98</p>
+                            </div>
+                            <div class="bg-blue-500 px-3 py-1 rounded-full text-[10px] font-bold">EXPERT</div>
                         </div>
-                        <div class="h-14 bg-slate-800/50 rounded-2xl border border-slate-700/50 flex items-center px-4 gap-3">
-                            <div class="w-8 h-8 bg-slate-700 rounded-lg"></div>
-                            <div class="h-2 w-32 bg-slate-700 rounded-full"></div>
+                        <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-4 mb-6 shadow-lg">
+                            <p class="text-blue-100 text-[10px]">יתרה למימוש</p>
+                            <p class="text-2xl font-bold">₪ 1,240</p>
                         </div>
-                        <div class="h-14 bg-slate-800/50 rounded-2xl border border-slate-700/50 flex items-center px-4 gap-3">
-                            <div class="w-8 h-8 bg-slate-700 rounded-lg"></div>
-                            <div class="h-2 w-20 bg-slate-700 rounded-full"></div>
+                        <p class="text-xs font-bold mb-4 opacity-70">הטבות שמחכות לך:</p>
+                        <div class="space-y-3">
+                            <div class="h-14 bg-white/10 rounded-xl flex items-center px-4 gap-3">
+                                <div class="w-8 h-8 bg-white/20 rounded-lg"></div>
+                                <div class="h-2 w-20 bg-white/20 rounded-full"></div>
+                            </div>
+                            <div class="h-14 bg-white/10 rounded-xl flex items-center px-4 gap-3">
+                                <div class="w-8 h-8 bg-white/20 rounded-lg"></div>
+                                <div class="h-2 w-24 bg-white/20 rounded-full"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -103,93 +93,102 @@
         </div>
     </section>
 
-    <section id="features" class="py-24 px-6 max-w-7xl mx-auto">
-        <div class="grid md:grid-cols-3 gap-8">
-            <div class="group p-8 bg-white border border-slate-100 rounded-[2.5rem] text-center hover:shadow-xl hover:shadow-blue-50 transition-all duration-300">
-                <div class="bg-blue-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                    <i data-lucide="smartphone" class="text-blue-600 w-8 h-8"></i>
-                </div>
-                <h3 class="text-2xl font-bold mb-4 text-slate-800">מתקינים ויוצאים</h3>
-                <p class="text-slate-500 leading-relaxed">האפליקציה פועלת אוטומטית ברקע, מזהה את הנסיעה שלכם וחוסכת לכם זמן ומאמץ.</p>
+    <div class="bg-slate-50 py-12 border-y border-slate-200">
+        <div class="max-w-7xl mx-auto px-6">
+            <p class="text-center text-slate-400 text-sm font-bold mb-8 uppercase tracking-widest">בקרוב תוכלו לממש ב-</p>
+            <div class="flex flex-wrap justify-center items-center gap-12 grayscale opacity-60">
+                <span class="text-2xl font-black text-slate-400 italic">Wolt</span>
+                <span class="text-2xl font-black text-slate-400 uppercase">KSP</span>
+                <span class="text-2xl font-black text-slate-400">Yellow</span>
+                <span class="text-2xl font-black text-slate-400">Be</span>
             </div>
-            <div class="group p-8 bg-white border border-slate-100 rounded-[2.5rem] text-center hover:shadow-xl hover:shadow-blue-50 transition-all duration-300">
-                <div class="bg-blue-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                    <i data-lucide="shield-check" class="text-blue-600 w-8 h-8"></i>
-                </div>
-                <h3 class="text-2xl font-bold mb-4 text-slate-800">נוהגים בטוח</h3>
-                <p class="text-slate-500 leading-relaxed">מקבלים ציון המבוסס על איכות הנהיגה ורמת הריכוז שלכם בכביש. בטיחות היא בראש.</p>
+        </div>
+    </div>
+
+    <section class="py-24 px-6 max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-black mb-4">איך זה עובד?</h2>
+            <p class="text-slate-500 font-medium">שלושה שלבים פשוטים בדרך לנהיגה משתלמת יותר</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-12">
+            <div class="text-right p-4">
+                <div class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold mb-6 shadow-lg">1</div>
+                <h3 class="text-2xl font-bold mb-4">מתקינים ונוסעים</h3>
+                <p class="text-slate-500 leading-relaxed font-medium">האפליקציה מזהה אוטומטית מתי התחלתם לנהוג. אין צורך לפתוח אותה בכל פעם – פשוט תתרכזו בכביש.</p>
             </div>
-            <div class="group p-8 bg-white border border-slate-100 rounded-[2.5rem] text-center hover:shadow-xl hover:shadow-blue-50 transition-all duration-300">
-                <div class="bg-blue-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                    <i data-lucide="gift" class="text-blue-600 w-8 h-8"></i>
-                </div>
-                <h3 class="text-2xl font-bold mb-4 text-slate-800">נהנים מהטבות</h3>
-                <p class="text-slate-500 leading-relaxed">הופכים את הנהיגה הבטוחה לנקודות, ואת הנקודות לשוברים יקרי ערך ברשתות המובילות.</p>
+            <div class="text-right p-4">
+                <div class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold mb-6 shadow-lg">2</div>
+                <h3 class="text-2xl font-bold mb-4">צוברים נקודות</h3>
+                <p class="text-slate-500 leading-relaxed font-medium">נהיגה ללא הסחות דעת, בלימות פתע או מהירות מופרזת מעלה את הציון שלכם וצוברת לכם "קארמה".</p>
+            </div>
+            <div class="text-right p-4">
+                <div class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold mb-6 shadow-lg">3</div>
+                <h3 class="text-2xl font-bold mb-4">נהנים מהטבות</h3>
+                <p class="text-slate-500 leading-relaxed font-medium">ממירים את הנקודות לשוברים דיגיטליים ישירות מהאפליקציה ונהנים מהנחות בחנויות האהובות עליכם.</p>
             </div>
         </div>
     </section>
 
-    <section id="signup" class="py-24 px-6 bg-slate-900 text-white overflow-hidden relative">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px]"></div>
-        <div class="max-w-4xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
-            <div>
-                <h2 class="text-4xl font-black mb-6">הבטיחו מקום בבטא</h2>
-                <p class="text-slate-400 mb-10 text-lg font-medium">
-                    אנחנו בונים קבוצה איכותית של 500 נהגים ראשונים שישפיעו על עתיד הנהיגה בישראל. הירשמו עכשיו כדי להתחיל לצבור.
+    <section class="py-24 bg-white border-t border-slate-100 px-6">
+        <div class="max-w-3xl mx-auto">
+            <h2 class="text-3xl font-black text-center mb-12">שאלות נפוצות</h2>
+            <div class="space-y-6">
+                <div class="p-6 bg-slate-50 rounded-2xl">
+                    <h4 class="font-bold mb-2">זה פוגע בסוללה?</h4>
+                    <p class="text-slate-500 text-sm">הטכנולוגיה שלנו מבוססת על אלגוריתם חכם הצורך פחות מ-2% מהסוללה ביום עבודה רגיל.</p>
+                </div>
+                <div class="p-6 bg-slate-50 rounded-2xl">
+                    <h4 class="font-bold mb-2">האם הפרטיות שלי נשמרת?</h4>
+                    <p class="text-slate-500 text-sm">בהחלט. המידע נשמר באופן אנונימי ומשמש אך ורק לחישוב הציון שלך. אנחנו לעולם לא נמכור מידע לצד ג'.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="signup" class="py-24 px-6">
+        <div class="max-w-5xl mx-auto bg-blue-600 rounded-[3rem] p-12 text-white text-center relative overflow-hidden shadow-2xl shadow-blue-200">
+            <div class="relative z-10">
+                <h2 class="text-4xl md:text-5xl font-black mb-6">מוכנים להתחיל להרוויח?</h2>
+                <p class="text-blue-100 mb-10 text-lg font-medium max-w-2xl mx-auto">
+                    הצטרפו ל-432 נהגים שכבר נרשמו לפיילוט. המקומות מוגבלים ל-500 הראשונים בלבד.
                 </p>
-                <div class="flex items-center gap-4 text-blue-400 font-bold bg-blue-400/5 self-start p-4 rounded-2xl border border-blue-400/20">
-                    <i data-lucide="users" class="w-6 h-6"></i>
-                    <span>432 נהגים כבר הצטרפו לנבחרת</span>
+                <div class="bg-white p-2 rounded-2xl max-w-md mx-auto flex flex-col sm:flex-row gap-2">
+                    <input type="email" placeholder="האימייל שלך" class="flex-1 p-4 text-slate-900 outline-none rounded-xl font-bold bg-transparent">
+                    <button onclick="handleDemoClick()" class="bg-blue-600 text-white px-8 py-4 rounded-xl font-black hover:bg-slate-900 transition-all">
+                        להרשמה בחינם
+                    </button>
                 </div>
-            </div>
-
-            <div class="bg-white p-10 rounded-[3rem] text-slate-900 shadow-2xl">
-                <div id="form-container">
-                    <h4 class="text-xl font-bold text-center mb-8 text-slate-800">הצטרפו לרשימת ההמתנה</h4>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-bold mb-2 mr-1">שם מלא</label>
-                            <input type="text" placeholder="ישראל ישראלי" class="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold mb-2 mr-1">כתובת אימייל</label>
-                            <input type="email" placeholder="name@example.com" class="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-all">
-                        </div>
-                        <button onclick="handleDemoClick()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all mt-4">
-                            שליחת פרטים
-                        </button>
-                    </div>
-                </div>
-                <div id="success-msg" class="hidden text-center py-12">
-                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <i data-lucide="check-circle" class="w-10 h-10 text-green-600"></i>
-                    </div>
-                    <h3 class="text-3xl font-black text-slate-900">רשמנו אותך!</h3>
-                    <p class="text-slate-500 mt-4 text-lg font-medium">עדכון יישלח אלייך למייל בקרוב.</p>
+                <div id="success-msg" class="hidden mt-6 bg-blue-500/30 p-4 rounded-xl border border-blue-400">
+                    <p class="font-bold">תודה! נשלח לך עדכון בקרוב.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="py-12 text-center text-slate-400 text-sm font-semibold border-t border-slate-50">
-        <p>© 2026 Carma MVP | פרויקט גמר | דן, גל, מאי, נווה ושון</p>
+    <footer class="py-12 text-center text-slate-400 text-sm font-bold">
+        <div class="flex justify-center gap-6 mb-4">
+            <div class="flex items-center gap-1 text-blue-600">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <span>Privacy First</span>
+            </div>
+            <div class="flex items-center gap-1 text-blue-600">
+                <i data-lucide="zap" class="w-4 h-4"></i>
+                <span>Battery Optimized</span>
+            </div>
+        </div>
+        <p>© 2026 Carma | פרויקט גמר של דן, גל, מאי, נווה ושון</p>
     </footer>
 
     <script>
-        // Initialize Icons
         lucide.createIcons();
 
         function handleDemoClick() {
-            // הוספת אפקט טעינה קטן (אופציונלי)
-            const btn = event.target;
-            btn.innerText = "שולח...";
-            
-            setTimeout(() => {
-                document.getElementById('form-container').classList.add('hidden');
+            const input = document.querySelector('input[type="email"]');
+            if (input.value) {
                 document.getElementById('success-msg').classList.remove('hidden');
-                lucide.createIcons();
+                input.value = '';
                 console.log("Lead captured!");
-            }, 800);
+            }
         }
     </script>
 </body>
