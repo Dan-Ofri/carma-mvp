@@ -283,6 +283,7 @@
                         <p id="signup-rate" class="mt-1 text-xs font-semibold text-slate-500">-</p>
                     </article>
                 </div>
+                <p id="metrics-source" class="mx-auto mt-3 max-w-3xl text-center text-xs text-slate-500"></p>
             </section>
 
             <section class="px-5 pb-6 sm:px-8 sm:pb-10" aria-label="הבהרות פיילוט">
@@ -339,6 +340,7 @@
                     <div id="lead-success" class="mx-auto mt-8 hidden w-full max-w-xl rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
                         <p class="headline text-2xl font-extrabold text-emerald-800">תודה על ההתעניינות והעזרה!</p>
                         <p class="mt-3 text-sm text-emerald-700">קיבלנו את הפרטים שלך ונעדכן במייל כששלב ההצטרפות הבא ייפתח.</p>
+                        <p id="lead-success-meta" class="mt-3 text-xs font-semibold text-emerald-800"></p>
                     </div>
                 </div>
             </section>
@@ -358,6 +360,7 @@
         const emailWrap = document.getElementById("email-wrap");
         const formMsg = document.getElementById("form-msg");
         const leadSuccess = document.getElementById("lead-success");
+        const leadSuccessMeta = document.getElementById("lead-success-meta");
         const consentInput = document.getElementById("consent");
         const eligibilityInput = document.getElementById("eligibility");
         const heroLine1El = document.getElementById("hero-line-1");
@@ -367,6 +370,7 @@
         const visitsCountEl = document.getElementById("visits-count");
         const signupsCountEl = document.getElementById("signups-count");
         const signupRateEl = document.getElementById("signup-rate");
+        const metricsSourceEl = document.getElementById("metrics-source");
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
         const COUNTER_NAMESPACE = "carma_mvp_prod";
@@ -377,8 +381,12 @@
         // Example: https://your-server.com/api/leads
         const LEAD_WEBHOOK_URL = "";
         const LEAD_SUCCESS_SESSION_KEY = "carma_signup_completed";
+        const LEAD_SUCCESS_META_SESSION_KEY = "carma_signup_meta";
         const HERO_VARIANT_SESSION_KEY = "carma_hero_variant";
         const HERO_VARIANT_IMPRESSION_TRACKED = "carma_hero_impression_tracked";
+        const VISIT_TRACKED_SESSION_KEY = "carma_visit_tracked";
+        const LOCAL_VISITS_KEY = "carma_local_visits";
+        const LOCAL_SIGNUPS_KEY = "carma_local_signups";
 
         const HERO_VARIANTS = {
             a: {
@@ -408,12 +416,32 @@
         function showLeadSuccessState() {
             leadForm.classList.add("hidden");
             leadSuccess.classList.remove("hidden");
+
+            const meta = sessionStorage.getItem(LEAD_SUCCESS_META_SESSION_KEY);
+            leadSuccessMeta.textContent = meta || "";
         }
 
         function initializeLeadSuccessState() {
             if (sessionStorage.getItem(LEAD_SUCCESS_SESSION_KEY) === "1") {
                 showLeadSuccessState();
             }
+        }
+
+        function getLocalCount(key) {
+            const value = Number(localStorage.getItem(key));
+            return Number.isFinite(value) && value >= 0 ? value : 0;
+        }
+
+        function incrementLocalCount(key) {
+            const nextValue = getLocalCount(key) + 1;
+            localStorage.setItem(key, String(nextValue));
+            return nextValue;
+        }
+
+        function createSignupReceipt() {
+            const receipt = `CRMA-${Date.now().toString(36).toUpperCase()}`;
+            const formattedDate = new Date().toLocaleString("he-IL");
+            return `מספר רישום: ${receipt} | נקלט בתאריך: ${formattedDate}`;
         }
 
         function getOrCreateHeroVariant() {
@@ -505,33 +533,44 @@
                 safeGetCounterValue(SIGNUPS_KEY)
             ]);
 
-            visitsCountEl.textContent = visits === null ? "-" : formatNumber(visits);
-            signupsCountEl.textContent = signups === null ? "-" : formatNumber(signups);
+            const localVisits = getLocalCount(LOCAL_VISITS_KEY);
+            const localSignups = getLocalCount(LOCAL_SIGNUPS_KEY);
+            const usingFallback = visits === null || signups === null;
+            const finalVisits = visits === null ? localVisits : visits;
+            const finalSignups = signups === null ? localSignups : signups;
 
-            if (visits !== null && signups !== null) {
-                updateRates(visits, signups);
-            } else {
-                signupRateEl.textContent = "-";
-            }
+            visitsCountEl.textContent = formatNumber(finalVisits);
+            signupsCountEl.textContent = formatNumber(finalSignups);
+
+            metricsSourceEl.textContent = usingFallback
+                ? "הצגת נתונים מקומית (שירות הספירה החיצוני לא זמין כרגע)."
+                : "הצגת נתונים בזמן אמת.";
+
+            updateRates(finalVisits, finalSignups);
         }
 
         async function trackVisit() {
-            if (sessionStorage.getItem("carma_visit_tracked") === "1") {
+            if (sessionStorage.getItem(VISIT_TRACKED_SESSION_KEY) === "1") {
                 return;
             }
+
+            incrementLocalCount(LOCAL_VISITS_KEY);
+            sessionStorage.setItem(VISIT_TRACKED_SESSION_KEY, "1");
 
             const value = await safeHitCounter(VISITS_KEY);
             if (value !== null) {
                 visitsCountEl.textContent = formatNumber(value);
-                sessionStorage.setItem("carma_visit_tracked", "1");
             }
             refreshCounters();
         }
 
         async function trackSignup() {
+            const localValue = incrementLocalCount(LOCAL_SIGNUPS_KEY);
             const value = await safeHitCounter(SIGNUPS_KEY);
             if (value !== null) {
                 signupsCountEl.textContent = formatNumber(value);
+            } else {
+                signupsCountEl.textContent = formatNumber(localValue);
             }
             refreshCounters();
             return value;
@@ -618,6 +657,8 @@
                     ? "נרשמתם בהצלחה. כרגע נשמור את הרישום בספירה, ונשלים שליחת פרטים בהמשך."
                     : "מעולה. נרשמתם לניסוי ה-MVP של Carma.");
                 leadForm.reset();
+                const receiptMeta = createSignupReceipt();
+                sessionStorage.setItem(LEAD_SUCCESS_META_SESSION_KEY, receiptMeta);
                 sessionStorage.setItem(LEAD_SUCCESS_SESSION_KEY, "1");
                 showLeadSuccessState();
                 console.log("Lead captured:", value);
