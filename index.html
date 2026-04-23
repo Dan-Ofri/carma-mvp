@@ -281,6 +281,19 @@
                 </div>
             </section>
 
+            <section class="px-5 pb-8 sm:px-8 sm:pb-10" aria-label="נתוני שימוש">
+                <div class="mx-auto grid w-full max-w-3xl gap-3 sm:grid-cols-2">
+                    <article class="glass rounded-2xl p-5 text-center">
+                        <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">כניסות לאתר</p>
+                        <p id="visits-count" class="headline mt-2 text-3xl font-extrabold text-slate-900">-</p>
+                    </article>
+                    <article class="glass rounded-2xl p-5 text-center">
+                        <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">נרשמו לפיילוט</p>
+                        <p id="signups-count" class="headline mt-2 text-3xl font-extrabold text-brand-600">-</p>
+                    </article>
+                </div>
+            </section>
+
             <section id="lead" class="px-5 pb-20 pt-10 sm:px-8">
                 <div class="mx-auto w-full max-w-2xl rounded-[2rem] border border-slate-200 bg-white p-6 text-center shadow-soft sm:p-10">
                     <h2 class="headline text-3xl font-extrabold text-slate-900 sm:text-4xl">תצטרפו לפיילוט של Carma</h2>
@@ -327,7 +340,90 @@
         const emailInput = document.getElementById("email");
         const emailWrap = document.getElementById("email-wrap");
         const formMsg = document.getElementById("form-msg");
+        const visitsCountEl = document.getElementById("visits-count");
+        const signupsCountEl = document.getElementById("signups-count");
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+        const COUNTER_NAMESPACE = "carma_mvp_prod";
+        const VISITS_KEY = "site_visits";
+        const SIGNUPS_KEY = "pilot_signups";
+
+        // Optional webhook URL for storing lead emails in a real backend.
+        // Example: https://your-server.com/api/leads
+        const LEAD_WEBHOOK_URL = "";
+
+        function formatNumber(value) {
+            return new Intl.NumberFormat("he-IL").format(value);
+        }
+
+        async function getCounterValue(key) {
+            const response = await fetch(`https://api.countapi.xyz/get/${COUNTER_NAMESPACE}/${key}`);
+            if (!response.ok) throw new Error("Counter get failed");
+            const data = await response.json();
+            return Number(data.value || 0);
+        }
+
+        async function hitCounter(key) {
+            const response = await fetch(`https://api.countapi.xyz/hit/${COUNTER_NAMESPACE}/${key}`);
+            if (!response.ok) throw new Error("Counter hit failed");
+            const data = await response.json();
+            return Number(data.value || 0);
+        }
+
+        async function refreshCounters() {
+            try {
+                const [visits, signups] = await Promise.all([
+                    getCounterValue(VISITS_KEY),
+                    getCounterValue(SIGNUPS_KEY)
+                ]);
+                visitsCountEl.textContent = formatNumber(visits);
+                signupsCountEl.textContent = formatNumber(signups);
+            } catch (error) {
+                console.error("Failed to fetch counters", error);
+                visitsCountEl.textContent = "-";
+                signupsCountEl.textContent = "-";
+            }
+        }
+
+        async function trackVisit() {
+            if (sessionStorage.getItem("carma_visit_tracked") === "1") {
+                return;
+            }
+
+            try {
+                const value = await hitCounter(VISITS_KEY);
+                visitsCountEl.textContent = formatNumber(value);
+                sessionStorage.setItem("carma_visit_tracked", "1");
+            } catch (error) {
+                console.error("Failed to track visit", error);
+            }
+        }
+
+        async function trackSignup() {
+            const value = await hitCounter(SIGNUPS_KEY);
+            signupsCountEl.textContent = formatNumber(value);
+            return value;
+        }
+
+        async function sendLeadToWebhook(email) {
+            if (!LEAD_WEBHOOK_URL) return;
+
+            const response = await fetch(LEAD_WEBHOOK_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email,
+                    source: "landing-page",
+                    createdAt: new Date().toISOString()
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("Webhook failed");
+            }
+        }
 
         function setMessage(type, text) {
             formMsg.className = "mt-4 rounded-xl px-4 py-3 text-sm font-bold";
@@ -364,10 +460,27 @@
             }
 
             setInputState(true);
-            setMessage("success", "מעולה. נרשמתם לרשימת ההמתנה של Carma.");
-            leadForm.reset();
-            console.log("Lead captured:", value);
+
+            Promise.allSettled([
+                trackSignup(),
+                sendLeadToWebhook(value)
+            ]).then(function (results) {
+                const signupFailed = results[0].status === "rejected";
+
+                if (signupFailed) {
+                    setInputState(false);
+                    setMessage("error", "אירעה תקלה רגעית בהרשמה. נסו שוב בעוד רגע.");
+                    return;
+                }
+
+                setMessage("success", "מעולה. נרשמתם לרשימת ההמתנה של Carma.");
+                leadForm.reset();
+                console.log("Lead captured:", value);
+            });
         });
+
+        refreshCounters();
+        trackVisit();
     </script>
 </body>
 </html>
