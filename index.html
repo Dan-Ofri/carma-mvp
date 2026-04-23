@@ -338,6 +338,9 @@
                     <div id="lead-success" class="mx-auto mt-8 hidden w-full max-w-xl rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
                         <p class="headline text-2xl font-extrabold text-emerald-800">תודה על ההתעניינות והעזרה!</p>
                         <p class="mt-3 text-sm text-emerald-700">קיבלנו את הפרטים שלך ונעדכן במייל כששלב ההצטרפות הבא ייפתח.</p>
+                        <button id="share-cta" type="button" class="mx-auto mt-4 inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-800">
+                            שתפו חבר או חברה שמתאימים לפיילוט
+                        </button>
                     </div>
                 </div>
             </section>
@@ -357,6 +360,7 @@
         const emailWrap = document.getElementById("email-wrap");
         const formMsg = document.getElementById("form-msg");
         const leadSuccess = document.getElementById("lead-success");
+        const shareCta = document.getElementById("share-cta");
         const consentInput = document.getElementById("consent");
         const eligibilityInput = document.getElementById("eligibility");
         const heroLine1El = document.getElementById("hero-line-1");
@@ -378,7 +382,6 @@
         const OWNER_SIGNUPS_LOG_KEY = "carma_owner_signups_log";
         const HERO_VARIANT_SESSION_KEY = "carma_hero_variant";
         const HERO_VARIANT_IMPRESSION_TRACKED = "carma_hero_impression_tracked";
-        const VISIT_TRACKED_SESSION_KEY = "carma_visit_tracked";
         const LOCAL_VISITS_KEY = "carma_local_visits";
         const LOCAL_SIGNUPS_KEY = "carma_local_signups";
 
@@ -528,12 +531,7 @@
         }
 
         async function trackVisit() {
-            if (sessionStorage.getItem(VISIT_TRACKED_SESSION_KEY) === "1") {
-                return;
-            }
-
             incrementLocalCount(LOCAL_VISITS_KEY);
-            sessionStorage.setItem(VISIT_TRACKED_SESSION_KEY, "1");
 
             const value = await safeHitCounter(VISITS_KEY);
             if (value !== null) {
@@ -645,6 +643,50 @@
         heroPrimaryCtaEl.addEventListener("click", function () {
             trackHeroCtaClick();
         });
+
+        shareCta.addEventListener("click", async function () {
+            const shareText = "הצטרפתי לפיילוט של Carma. אם את/ה בגילאי 17-24 עם רישיון בתוקף, שווה להירשם.";
+            const shareUrl = window.location.href;
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({ text: shareText, url: shareUrl });
+                    return;
+                } catch (error) {
+                    console.log("Native share cancelled or failed", error);
+                }
+            }
+
+            const fallbackText = `${shareText} ${shareUrl}`;
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(fallbackText);
+                    alert("הקישור הועתק. אפשר לשתף אותו בוואטסאפ או בכל ערוץ אחר.");
+                    return;
+                } catch (error) {
+                    console.log("Clipboard write failed", error);
+                }
+            }
+
+            prompt("העתיקו את הטקסט לשיתוף:", fallbackText);
+        });
+
+        window.carmaOwner = {
+            getSignupsLog: function () {
+                return JSON.parse(localStorage.getItem(OWNER_SIGNUPS_LOG_KEY) || "[]");
+            },
+            getLocalCounters: function () {
+                return {
+                    visits: getLocalCount(LOCAL_VISITS_KEY),
+                    signups: getLocalCount(LOCAL_SIGNUPS_KEY)
+                };
+            },
+            clearLocalCounters: function () {
+                localStorage.removeItem(LOCAL_VISITS_KEY);
+                localStorage.removeItem(LOCAL_SIGNUPS_KEY);
+                refreshCounters();
+            }
+        };
 
         const heroVariant = getOrCreateHeroVariant();
         applyHeroVariant(heroVariant);
