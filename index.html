@@ -335,6 +335,11 @@
                         <p class="mt-2 text-xs text-slate-500">שימו לב: ההרשמה לפיילוט אינה התחייבות לתגמול מיידי אלא בדיקת נכונות לשימוש במוצר.</p>
                         <p id="form-msg" class="mt-4 hidden rounded-xl px-4 py-3 text-sm font-bold" role="status" aria-live="polite"></p>
                     </form>
+
+                    <div id="lead-success" class="mx-auto mt-8 hidden w-full max-w-xl rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
+                        <p class="headline text-2xl font-extrabold text-emerald-800">תודה על ההתעניינות והעזרה!</p>
+                        <p class="mt-3 text-sm text-emerald-700">קיבלנו את הפרטים שלך ונעדכן במייל כששלב ההצטרפות הבא ייפתח.</p>
+                    </div>
                 </div>
             </section>
         </main>
@@ -352,6 +357,7 @@
         const emailInput = document.getElementById("email");
         const emailWrap = document.getElementById("email-wrap");
         const formMsg = document.getElementById("form-msg");
+        const leadSuccess = document.getElementById("lead-success");
         const consentInput = document.getElementById("consent");
         const eligibilityInput = document.getElementById("eligibility");
         const visitsCountEl = document.getElementById("visits-count");
@@ -366,6 +372,18 @@
         // Optional webhook URL for storing lead emails in a real backend.
         // Example: https://your-server.com/api/leads
         const LEAD_WEBHOOK_URL = "";
+        const LEAD_SUCCESS_SESSION_KEY = "carma_signup_completed";
+
+        function showLeadSuccessState() {
+            leadForm.classList.add("hidden");
+            leadSuccess.classList.remove("hidden");
+        }
+
+        function initializeLeadSuccessState() {
+            if (sessionStorage.getItem(LEAD_SUCCESS_SESSION_KEY) === "1") {
+                showLeadSuccessState();
+            }
+        }
 
         function formatNumber(value) {
             return new Intl.NumberFormat("he-IL").format(value);
@@ -531,10 +549,13 @@
                     ? "נרשמתם בהצלחה. כרגע נשמור את הרישום בספירה, ונשלים שליחת פרטים בהמשך."
                     : "מעולה. נרשמתם לניסוי ה-MVP של Carma.");
                 leadForm.reset();
+                sessionStorage.setItem(LEAD_SUCCESS_SESSION_KEY, "1");
+                showLeadSuccessState();
                 console.log("Lead captured:", value);
             });
         });
 
+        initializeLeadSuccessState();
         refreshCounters();
         trackVisit();
     </script>
