@@ -272,11 +272,7 @@
             </section>
 
             <section class="px-5 pb-8 sm:px-8 sm:pb-10" aria-label="נתוני שימוש">
-                <div class="mx-auto grid w-full max-w-3xl gap-3 sm:grid-cols-2">
-                    <article class="glass rounded-2xl p-5 text-center">
-                        <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">כניסות לאתר</p>
-                        <p id="visits-count" class="headline mt-2 text-3xl font-extrabold text-slate-900">-</p>
-                    </article>
+                <div class="mx-auto grid w-full max-w-md gap-3 sm:grid-cols-1">
                     <article class="glass rounded-2xl p-5 text-center">
                         <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">נרשמו</p>
                         <p id="signups-count" class="headline mt-2 text-3xl font-extrabold text-brand-600">-</p>
@@ -367,7 +363,6 @@
         const heroLine2El = document.getElementById("hero-line-2");
         const heroSubheadlineEl = document.getElementById("hero-subheadline");
         const heroPrimaryCtaEl = document.getElementById("hero-primary-cta");
-        const visitsCountEl = document.getElementById("visits-count");
         const signupsCountEl = document.getElementById("signups-count");
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -384,6 +379,7 @@
         const HERO_VARIANT_IMPRESSION_TRACKED = "carma_hero_impression_tracked";
         const LOCAL_VISITS_KEY = "carma_local_visits";
         const LOCAL_SIGNUPS_KEY = "carma_local_signups";
+        const VISIT_LAST_TRACKED_DAY_KEY = "carma_visit_last_tracked_day";
 
         const HERO_VARIANTS = {
             a: {
@@ -516,28 +512,28 @@
         }
 
         async function refreshCounters() {
-            const [visits, signups] = await Promise.all([
-                safeGetCounterValue(VISITS_KEY),
-                safeGetCounterValue(SIGNUPS_KEY)
-            ]);
-
-            const localVisits = getLocalCount(LOCAL_VISITS_KEY);
+            const signups = await safeGetCounterValue(SIGNUPS_KEY);
             const localSignups = getLocalCount(LOCAL_SIGNUPS_KEY);
-            const finalVisits = visits === null ? localVisits : Math.max(visits, localVisits);
             const finalSignups = signups === null ? localSignups : Math.max(signups, localSignups);
 
-            visitsCountEl.textContent = formatNumber(finalVisits);
             signupsCountEl.textContent = formatNumber(finalSignups);
         }
 
-        async function trackVisit() {
-            incrementLocalCount(LOCAL_VISITS_KEY);
+        function getTodayKey() {
+            return new Date().toISOString().slice(0, 10);
+        }
 
-            const value = await safeHitCounter(VISITS_KEY);
-            if (value !== null) {
-                visitsCountEl.textContent = formatNumber(value);
+        async function trackVisit() {
+            const todayKey = getTodayKey();
+            const lastTrackedDay = localStorage.getItem(VISIT_LAST_TRACKED_DAY_KEY);
+            if (lastTrackedDay === todayKey) {
+                return;
             }
-            refreshCounters();
+
+            incrementLocalCount(LOCAL_VISITS_KEY);
+            localStorage.setItem(VISIT_LAST_TRACKED_DAY_KEY, todayKey);
+
+            await safeHitCounter(VISITS_KEY);
         }
 
         async function trackSignup() {
@@ -681,9 +677,16 @@
                     signups: getLocalCount(LOCAL_SIGNUPS_KEY)
                 };
             },
+            getServerCounters: async function () {
+                return {
+                    visits: await safeGetCounterValue(VISITS_KEY),
+                    signups: await safeGetCounterValue(SIGNUPS_KEY)
+                };
+            },
             clearLocalCounters: function () {
                 localStorage.removeItem(LOCAL_VISITS_KEY);
                 localStorage.removeItem(LOCAL_SIGNUPS_KEY);
+                localStorage.removeItem(VISIT_LAST_TRACKED_DAY_KEY);
                 refreshCounters();
             }
         };
@@ -693,8 +696,9 @@
         trackHeroImpression(heroVariant);
 
         initializeLeadSuccessState();
-        refreshCounters();
-        trackVisit();
+        trackVisit().finally(function () {
+            refreshCounters();
+        });
     </script>
 </body>
 </html>
