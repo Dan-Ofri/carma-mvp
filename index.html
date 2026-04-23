@@ -147,20 +147,20 @@
                         </div>
 
                         <h1 class="headline text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                            תנהגו בטוח.
-                            <span class="block text-brand-600">תרוויחו תגמולים בעתיד.</span>
+                            <span id="hero-line-1">תנהגו בטוח.</span>
+                            <span id="hero-line-2" class="block text-brand-600">תרוויחו קרדיט בהמשך.</span>
                         </h1>
 
-                        <p class="mt-6 max-w-xl text-lg leading-relaxed text-slate-600 sm:text-xl">
-                            Carma בודקת האם נהגים צעירים מוכנים להוריד אפליקציה חינמית, להירשם ולשתף נתוני נהיגה אנונימיים בתמורה להבטחה לתגמולים בהמשך.
+                        <p id="hero-subheadline" class="mt-6 max-w-xl text-lg leading-relaxed text-slate-600 sm:text-xl">
+                            אפליקציה חינמית לנהגים צעירים: נרשמים לפיילוט, משתפים נתוני נהיגה אנונימיים, ובודקים התאמה לתגמולים עתידיים.
                         </p>
 
                         <div class="mt-9 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                             <a href="#how" class="rounded-2xl border border-slate-300 px-6 py-3 text-center font-bold text-slate-700 transition hover:border-slate-400 hover:text-slate-900">
                                 איך זה עובד
                             </a>
-                            <a href="#lead" class="rounded-2xl bg-slate-900 px-6 py-3 text-center font-bold text-white shadow-soft transition hover:bg-brand-600">
-                                אני רוצה להוריד כשנפתח
+                            <a id="hero-primary-cta" href="#lead" class="rounded-2xl bg-slate-900 px-6 py-3 text-center font-bold text-white shadow-soft transition hover:bg-brand-600">
+                                אני רוצה להצטרף לפיילוט
                             </a>
                         </div>
                     </div>
@@ -224,7 +224,7 @@
                             <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-brand-600">
                                 <i data-lucide="car-front" class="h-5 w-5"></i>
                             </div>
-                            <h3 class="headline text-2xl font-bold">Download</h3>
+                            <h3 class="headline text-2xl font-bold">הורדה בחינם</h3>
                             <p class="mt-2 leading-relaxed text-slate-600">נהגים צעירים מצהירים שהם מוכנים להוריד אפליקציה חינמית.</p>
                         </article>
 
@@ -232,7 +232,7 @@
                             <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-brand-600">
                                 <i data-lucide="gauge" class="h-5 w-5"></i>
                             </div>
-                            <h3 class="headline text-2xl font-bold">Sign Up</h3>
+                            <h3 class="headline text-2xl font-bold">הרשמה מהירה</h3>
                             <p class="mt-2 leading-relaxed text-slate-600">הם משאירים מייל ונרשמים לרשימת המתנה של הפיילוט.</p>
                         </article>
 
@@ -240,8 +240,8 @@
                             <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-brand-600">
                                 <i data-lucide="wallet-cards" class="h-5 w-5"></i>
                             </div>
-                            <h3 class="headline text-2xl font-bold">Consent</h3>
-                            <p class="mt-2 leading-relaxed text-slate-600">הם מסכימים לשיתוף נתוני נהיגה אנונימיים בתמורה לתגמולים עתידיים.</p>
+                            <h3 class="headline text-2xl font-bold">אישור שיתוף נתונים</h3>
+                            <p class="mt-2 leading-relaxed text-slate-600">הם מאשרים שיתוף נתוני נהיגה אנונימיים לצורכי הפיילוט.</p>
                         </article>
                     </div>
                 </div>
@@ -254,7 +254,7 @@
                             <i data-lucide="shield-check" class="h-4 w-4"></i>
                         </span>
                         <div>
-                            <p class="text-sm font-bold text-slate-900">Privacy First</p>
+                            <p class="text-sm font-bold text-slate-900">פרטיות לפני הכל</p>
                             <p class="text-xs text-slate-500">הנתונים נשמרים בצורה מוצפנת ואנונימית.</p>
                         </div>
                     </div>
@@ -264,7 +264,7 @@
                             <i data-lucide="battery-charging" class="h-4 w-4"></i>
                         </span>
                         <div>
-                            <p class="text-sm font-bold text-slate-900">Low Battery Impact</p>
+                            <p class="text-sm font-bold text-slate-900">השפעה נמוכה על הסוללה</p>
                             <p class="text-xs text-slate-500">ממוצע צריכה יומי נמוך במיוחד.</p>
                         </div>
                     </div>
@@ -360,6 +360,10 @@
         const leadSuccess = document.getElementById("lead-success");
         const consentInput = document.getElementById("consent");
         const eligibilityInput = document.getElementById("eligibility");
+        const heroLine1El = document.getElementById("hero-line-1");
+        const heroLine2El = document.getElementById("hero-line-2");
+        const heroSubheadlineEl = document.getElementById("hero-subheadline");
+        const heroPrimaryCtaEl = document.getElementById("hero-primary-cta");
         const visitsCountEl = document.getElementById("visits-count");
         const signupsCountEl = document.getElementById("signups-count");
         const signupRateEl = document.getElementById("signup-rate");
@@ -373,6 +377,33 @@
         // Example: https://your-server.com/api/leads
         const LEAD_WEBHOOK_URL = "";
         const LEAD_SUCCESS_SESSION_KEY = "carma_signup_completed";
+        const HERO_VARIANT_SESSION_KEY = "carma_hero_variant";
+        const HERO_VARIANT_IMPRESSION_TRACKED = "carma_hero_impression_tracked";
+
+        const HERO_VARIANTS = {
+            a: {
+                line1: "תנהגו בטוח.",
+                line2: "תצטרפו ראשונים לפיילוט.",
+                subheadline: "אפליקציה חינמית לנהגים צעירים: נרשמים, משתפים נתוני נהיגה אנונימיים, ובודקים התאמה לתגמולים עתידיים.",
+                cta: "אני רוצה להצטרף לפיילוט"
+            },
+            b: {
+                line1: "נהיגה חכמה מתחילה עכשיו.",
+                line2: "תהיו בין הראשונים בפיילוט Carma.",
+                subheadline: "בכמה צעדים פשוטים אתם מצטרפים לניסוי, משתפים נתונים אנונימיים ומסייעים לבנות מוצר אמיתי לנהגים צעירים.",
+                cta: "אני רוצה להיות מהראשונים"
+            }
+        };
+
+        const HERO_IMPRESSION_KEY_BY_VARIANT = {
+            a: "hero_impressions_a",
+            b: "hero_impressions_b"
+        };
+
+        const HERO_CTA_CLICK_KEY_BY_VARIANT = {
+            a: "hero_cta_clicks_a",
+            b: "hero_cta_clicks_b"
+        };
 
         function showLeadSuccessState() {
             leadForm.classList.add("hidden");
@@ -382,6 +413,44 @@
         function initializeLeadSuccessState() {
             if (sessionStorage.getItem(LEAD_SUCCESS_SESSION_KEY) === "1") {
                 showLeadSuccessState();
+            }
+        }
+
+        function getOrCreateHeroVariant() {
+            const existing = sessionStorage.getItem(HERO_VARIANT_SESSION_KEY);
+            if (existing === "a" || existing === "b") {
+                return existing;
+            }
+
+            const variant = Math.random() < 0.5 ? "a" : "b";
+            sessionStorage.setItem(HERO_VARIANT_SESSION_KEY, variant);
+            return variant;
+        }
+
+        function applyHeroVariant(variant) {
+            const copy = HERO_VARIANTS[variant];
+            heroLine1El.textContent = copy.line1;
+            heroLine2El.textContent = copy.line2;
+            heroSubheadlineEl.textContent = copy.subheadline;
+            heroPrimaryCtaEl.textContent = copy.cta;
+            heroPrimaryCtaEl.dataset.abVariant = variant;
+        }
+
+        async function trackHeroImpression(variant) {
+            if (sessionStorage.getItem(HERO_VARIANT_IMPRESSION_TRACKED) === "1") {
+                return;
+            }
+
+            const key = HERO_IMPRESSION_KEY_BY_VARIANT[variant];
+            await safeHitCounter(key);
+            sessionStorage.setItem(HERO_VARIANT_IMPRESSION_TRACKED, "1");
+        }
+
+        async function trackHeroCtaClick() {
+            const variant = heroPrimaryCtaEl.dataset.abVariant;
+            const key = HERO_CTA_CLICK_KEY_BY_VARIANT[variant];
+            if (key) {
+                await safeHitCounter(key);
             }
         }
 
@@ -468,7 +537,7 @@
             return value;
         }
 
-        async function sendLeadToWebhook(email, ageGroup) {
+        async function sendLeadToWebhook(email) {
             if (!LEAD_WEBHOOK_URL) return;
 
             const response = await fetch(LEAD_WEBHOOK_URL, {
@@ -554,6 +623,14 @@
                 console.log("Lead captured:", value);
             });
         });
+
+        heroPrimaryCtaEl.addEventListener("click", function () {
+            trackHeroCtaClick();
+        });
+
+        const heroVariant = getOrCreateHeroVariant();
+        applyHeroVariant(heroVariant);
+        trackHeroImpression(heroVariant);
 
         initializeLeadSuccessState();
         refreshCounters();
