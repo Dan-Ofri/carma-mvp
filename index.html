@@ -261,7 +261,7 @@
                     <h2 class="headline text-3xl font-extrabold text-slate-900 sm:text-4xl">תפסו מקום בנבחרת הנהגים שלנו</h2>
                     <p class="mx-auto mt-4 max-w-xl text-slate-600">השאירו מייל והצטרפו לפיילוט הראשוני. מספר המקומות מוגבל ל-100 נהגים.</p>
 
-                    <form id="lead-form" class="mx-auto mt-8 w-full max-w-xl" novalidate>
+                    <form id="lead-form" name="submit-to-google-sheet" class="mx-auto mt-8 w-full max-w-xl" novalidate>
                         <div id="email-wrap" class="rounded-2xl border border-slate-300 bg-white p-2 text-right shadow-sm transition">
                             <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
                                 <label for="email" class="sr-only">כתובת אימייל</label>
@@ -338,7 +338,7 @@
         // Optional webhook URL for storing lead emails in a real backend.
         // Example: https://your-server.com/api/leads
         const LEAD_WEBHOOK_URL = "";
-        const LEADS_SHEETS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxgia1yOeTL3YgaHXAr1pXP4PlEqQh6CSDOfPl_UEv1zq-IkTOA-G_20F-10zpyp2mA/exec";
+        const LEADS_SHEETS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzoUbKJOY6CUmllsHW2z2UsxD4xoWvuYdgalS-_dRKNVe_UdKBdJJwQuzlWNEPdkeuk/exec";
         const LEAD_SUCCESS_SESSION_KEY = "carma_signup_completed";
         const OWNER_SIGNUPS_LOG_KEY = "carma_owner_signups_log";
         const HERO_VARIANT_SESSION_KEY = "carma_hero_variant";
@@ -562,13 +562,18 @@
             }
         }
 
-        async function sendLeadToSheets() {
+        async function sendLeadToSheets(email) {
+            const formData = new FormData();
+            formData.append("email", email);
+
             const response = await fetch(LEADS_SHEETS_SCRIPT_URL, {
                 method: "POST",
-                body: new FormData(leadForm)
+                body: formData,
+                redirect: "follow"
             });
 
-            if (!response.ok) {
+            // Some Apps Script deployments can return an opaque response after redirects.
+            if (response.type !== "opaque" && !response.ok) {
                 throw new Error("Sheets submit failed");
             }
         }
@@ -631,7 +636,7 @@
             Promise.allSettled([
                 trackSignup(),
                 sendLeadToWebhook(value),
-                sendLeadToSheets()
+                sendLeadToSheets(value)
             ]).then(function (results) {
                 const webhookFailed = results[1].status === "rejected";
                 const sheetsFailed = results[2].status === "rejected";
