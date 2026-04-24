@@ -156,8 +156,8 @@
                         </div>
 
                         <h1 class="headline text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                            <span id="hero-line-1">הנהיגה שלכם שווה כסף!</span>
-                            <span id="hero-line-2" class="block text-brand-600">בואו לבדוק כמה</span>
+                            <span id="hero-line-1">הנהיגה שלכם שווה כסף.</span>
+                            <span id="hero-line-2" class="block text-brand-600">בואו נבדוק כמה.</span>
                         </h1>
 
                         <p id="hero-subheadline" class="mt-6 max-w-xl text-lg leading-relaxed text-slate-600 sm:text-xl">
@@ -234,7 +234,7 @@
                                 <i data-lucide="car-front" class="h-5 w-5"></i>
                             </div>
                             <h3 class="headline text-2xl font-bold">נסיעה </h3>
-                            <p class="mt-2 leading-relaxed text-slate-600">מפעילים את האפליקציה בתחילת כל נסיעה.</p>
+                            <p class="mt-2 leading-relaxed text-slate-600">מתחברים פעם אחת ל-Bluetooth, ומאותו רגע Carma עולה אוטומטית בכל נסיעה.</p>
                         </article>
 
                         <article class="glass rounded-3xl p-6 transition duration-300 hover:-translate-y-1 hover:shadow-soft">
@@ -324,10 +324,6 @@
         const shareCta = document.getElementById("share-cta");
         const consentInput = document.getElementById("consent");
         const eligibilityInput = document.getElementById("eligibility");
-        const heroLine1El = document.getElementById("hero-line-1");
-        const heroLine2El = document.getElementById("hero-line-2");
-        const heroSubheadlineEl = document.getElementById("hero-subheadline");
-        const heroPrimaryCtaEl = document.getElementById("hero-primary-cta");
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
         const COUNTER_NAMESPACE = "carma_mvp_prod";
@@ -341,39 +337,12 @@
         const LEADS_SHEETS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzc3Xvs-XsNStvFIbfu_ffNvpiQAzFwdVlDWeeySGWt4mcwzYgGCMQk7EE-vEENQ_Bc/exec";
         const LEAD_SUCCESS_SESSION_KEY = "carma_signup_completed";
         const OWNER_SIGNUPS_LOG_KEY = "carma_owner_signups_log";
-        const HERO_VARIANT_SESSION_KEY = "carma_hero_variant";
-        const HERO_VARIANT_IMPRESSION_TRACKED = "carma_hero_impression_tracked";
         const LOCAL_VISITS_KEY = "carma_local_visits";
         const LOCAL_SIGNUPS_KEY = "carma_local_signups";
         const VISIT_LAST_TRACKED_DAY_KEY = "carma_visit_last_tracked_day";
         let remoteCounterDisabled = false;
         let remoteCounterBase = COUNTER_BASE_CANDIDATES[0];
         let remoteCounterWarned = false;
-
-        const HERO_VARIANTS = {
-            a: {
-                line1: "הנהיגה שלכם שווה כסף.",
-                line2: "בואו נבדוק כמה.",
-                subheadline: "הצטרפו לפיילוט של Carma וקבלו הזדמנות להטבות וקרדיט על נהיגה בטוחה. פשוט, מהיר וללא עלות.",
-                cta: "תעדכנו אותי כשמתחילים"
-            },
-            b: {
-                line1: "תנהגו חכם. תיהנו מהטבות.",
-                line2: "Carma איתכם מהנסיעה הראשונה.",
-                subheadline: "נהיגה בטוחה יכולה להפוך לקרדיט אצל מותגים נבחרים. הצטרפו לגרסת הבטא הראשונית של Carma.",
-                cta: "אני רוצה להצטרף"
-            }
-        };
-
-        const HERO_IMPRESSION_KEY_BY_VARIANT = {
-            a: "hero_impressions_a",
-            b: "hero_impressions_b"
-        };
-
-        const HERO_CTA_CLICK_KEY_BY_VARIANT = {
-            a: "hero_cta_clicks_a",
-            b: "hero_cta_clicks_b"
-        };
 
         function showLeadSuccessState() {
             leadForm.classList.add("hidden");
@@ -401,47 +370,9 @@
             const existing = JSON.parse(localStorage.getItem(OWNER_SIGNUPS_LOG_KEY) || "[]");
             existing.push({
                 createdAt: new Date().toISOString(),
-                variant: sessionStorage.getItem(HERO_VARIANT_SESSION_KEY) || "unknown"
+                variant: "single"
             });
             localStorage.setItem(OWNER_SIGNUPS_LOG_KEY, JSON.stringify(existing));
-        }
-
-        function getOrCreateHeroVariant() {
-            const existing = sessionStorage.getItem(HERO_VARIANT_SESSION_KEY);
-            if (existing === "a" || existing === "b") {
-                return existing;
-            }
-
-            const variant = Math.random() < 0.5 ? "a" : "b";
-            sessionStorage.setItem(HERO_VARIANT_SESSION_KEY, variant);
-            return variant;
-        }
-
-        function applyHeroVariant(variant) {
-            const copy = HERO_VARIANTS[variant];
-            heroLine1El.textContent = copy.line1;
-            heroLine2El.textContent = copy.line2;
-            heroSubheadlineEl.textContent = copy.subheadline;
-            heroPrimaryCtaEl.textContent = copy.cta;
-            heroPrimaryCtaEl.dataset.abVariant = variant;
-        }
-
-        async function trackHeroImpression(variant) {
-            if (sessionStorage.getItem(HERO_VARIANT_IMPRESSION_TRACKED) === "1") {
-                return;
-            }
-
-            const key = HERO_IMPRESSION_KEY_BY_VARIANT[variant];
-            await safeHitCounter(key);
-            sessionStorage.setItem(HERO_VARIANT_IMPRESSION_TRACKED, "1");
-        }
-
-        async function trackHeroCtaClick() {
-            const variant = heroPrimaryCtaEl.dataset.abVariant;
-            const key = HERO_CTA_CLICK_KEY_BY_VARIANT[variant];
-            if (key) {
-                await safeHitCounter(key);
-            }
         }
 
         function formatNumber(value) {
@@ -661,10 +592,6 @@
             });
         });
 
-        heroPrimaryCtaEl.addEventListener("click", function () {
-            trackHeroCtaClick();
-        });
-
         shareCta.addEventListener("click", async function () {
             const shareText = "הצטרפתי לפיילוט של Carma. אם את/ה בגילאי 17-24 עם רישיון בתוקף, שווה להירשם.";
             const shareUrl = window.location.href;
@@ -722,10 +649,6 @@
                 refreshCounters();
             }
         };
-
-        const heroVariant = getOrCreateHeroVariant();
-        applyHeroVariant(heroVariant);
-        trackHeroImpression(heroVariant);
 
         initializeLeadSuccessState();
         trackVisit().finally(function () {
