@@ -231,7 +231,7 @@
                     <div class="grid gap-4 md:grid-cols-3">
                         <article class="glass rounded-3xl p-6 transition duration-300 hover:-translate-y-1 hover:shadow-soft">
                             <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-brand-600">
-                                <i data-lucide="badge-dollar-sign" class="h-5 w-5"></i>
+                                <i data-lucide="car-front" class="h-5 w-5"></i>
                             </div>
                             <h3 class="headline text-2xl font-bold">נסיעה </h3>
                             <p class="mt-2 leading-relaxed text-slate-600">מפעילים את האפליקציה בתחילת כל נסיעה.</p>
@@ -239,7 +239,7 @@
 
                         <article class="glass rounded-3xl p-6 transition duration-300 hover:-translate-y-1 hover:shadow-soft">
                             <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-brand-600">
-                                <i data-lucide="sparkles" class="h-5 w-5"></i>
+                                <i data-lucide="coins" class="h-5 w-5"></i>
                             </div>
                             <h3 class="headline text-2xl font-bold">צבירת נקודות</h3>
                             <p class="mt-2 leading-relaxed text-slate-600">צוברים נקודות Carma-Points בסיום כל נסיעה, בהתאם לציון הנהיגה הבטוחה שהתקבל.</p>
@@ -247,7 +247,7 @@
 
                         <article class="glass rounded-3xl p-6 transition duration-300 hover:-translate-y-1 hover:shadow-soft">
                             <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-brand-600">
-                                <i data-lucide="shield-check" class="h-5 w-5"></i>
+                                <i data-lucide="gift" class="h-5 w-5"></i>
                             </div>
                             <h3 class="headline text-2xl font-bold">הטבות</h3>
                             <p class="mt-2 leading-relaxed text-slate-600">ממירים את הנקודות שנצברו במבחר הטבות שניתן לממש ברשתות מובילות.</p>
@@ -338,6 +338,7 @@
         // Optional webhook URL for storing lead emails in a real backend.
         // Example: https://your-server.com/api/leads
         const LEAD_WEBHOOK_URL = "";
+        const LEADS_SHEETS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxgia1yOeTL3YgaHXAr1pXP4PlEqQh6CSDOfPl_UEv1zq-IkTOA-G_20F-10zpyp2mA/exec";
         const LEAD_SUCCESS_SESSION_KEY = "carma_signup_completed";
         const OWNER_SIGNUPS_LOG_KEY = "carma_owner_signups_log";
         const HERO_VARIANT_SESSION_KEY = "carma_hero_variant";
@@ -561,6 +562,17 @@
             }
         }
 
+        async function sendLeadToSheets() {
+            const response = await fetch(LEADS_SHEETS_SCRIPT_URL, {
+                method: "POST",
+                body: new FormData(leadForm)
+            });
+
+            if (!response.ok) {
+                throw new Error("Sheets submit failed");
+            }
+        }
+
         function setMessage(type, text) {
             formMsg.className = "mt-4 rounded-xl px-4 py-3 text-sm font-bold";
 
@@ -611,19 +623,36 @@
 
             setInputState(true);
 
+            const submitButton = leadForm.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.textContent;
+            submitButton.textContent = "שולח...";
+            submitButton.disabled = true;
+
             Promise.allSettled([
                 trackSignup(),
-                sendLeadToWebhook(value)
+                sendLeadToWebhook(value),
+                sendLeadToSheets()
             ]).then(function (results) {
                 const webhookFailed = results[1].status === "rejected";
-                setMessage("success", webhookFailed
-                    ? "נרשמתם בהצלחה. כרגע נשמור את הרישום בספירה, ונשלים שליחת פרטים בהמשך."
+                const sheetsFailed = results[2].status === "rejected";
+
+                if (typeof gtag !== "undefined") {
+                    gtag("event", "sign_up", {
+                        method: "lead_form"
+                    });
+                }
+
+                setMessage("success", (webhookFailed || sheetsFailed)
+                    ? "נרשמתם בהצלחה. ייתכן שעיבוד הנתונים יתעדכן בעיכוב קצר."
                     : "מעולה. נרשמתם לפיילוט של Carma.");
                 leadForm.reset();
                 appendOwnerSignupLog();
                 sessionStorage.setItem(LEAD_SUCCESS_SESSION_KEY, "1");
                 showLeadSuccessState();
                 console.log("Lead captured:", value);
+            }).finally(function () {
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false;
             });
         });
 
