@@ -280,6 +280,7 @@
                                     aria-describedby="email-help"
                                     required
                                 >
+                                <p id="email-help" class="sr-only">הכניסו כתובת אימייל לקבלת עדכונים על הפיילוט.</p>
                                 <button type="submit" class="w-full whitespace-nowrap rounded-xl bg-brand-600 px-6 py-3 font-bold text-white transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 sm:w-auto">
                                     אני רוצה להצטרף
                                 </button>
@@ -373,10 +374,6 @@
                 variant: "single"
             });
             localStorage.setItem(OWNER_SIGNUPS_LOG_KEY, JSON.stringify(existing));
-        }
-
-        function formatNumber(value) {
-            return new Intl.NumberFormat("he-IL").format(value);
         }
 
         function markRemoteCounterUnavailable() {
@@ -561,8 +558,14 @@
                 sendLeadToWebhook(value),
                 sendLeadToSheets(value)
             ]).then(function (results) {
-                const webhookFailed = results[1].status === "rejected";
+                const webhookEnabled = Boolean(LEAD_WEBHOOK_URL);
+                const webhookFailed = webhookEnabled && results[1].status === "rejected";
                 const sheetsFailed = results[2].status === "rejected";
+
+                if (sheetsFailed) {
+                    setMessage("error", "לא הצלחנו לשמור את הפרטים כרגע. אפשר לנסות שוב בעוד רגע.");
+                    return;
+                }
 
                 if (typeof gtag !== "undefined") {
                     gtag("event", "sign_up", {
@@ -570,7 +573,7 @@
                     });
                 }
 
-                setMessage("success", (webhookFailed || sheetsFailed)
+                setMessage("success", webhookFailed
                     ? "נרשמתם בהצלחה. ייתכן שעיבוד הנתונים יתעדכן בעיכוב קצר."
                     : "מעולה. נרשמתם לפיילוט של Carma.");
                 leadForm.reset();
@@ -585,7 +588,7 @@
         });
 
         shareCta.addEventListener("click", async function () {
-            const shareText = "הצטרפתי לפיילוט של Carma. אם את/ה בגילאי 17-24 עם רישיון בתוקף, שווה להירשם.";
+            const shareText = "הצטרפתי לפיילוט של Carma. אם גם לך בא להרוויח מנהיגה בטוחה, שווה להירשם.";
             const shareUrl = window.location.href;
 
             if (navigator.share) {
